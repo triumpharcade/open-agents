@@ -34,7 +34,7 @@
     "ultracite": "7.4.0"
   },
   "overrides": {
-    "zod": "^4.5.4"
+    "zod": "~4.5.4"
   },
   "packageManager": "bun@1.2.14"
 }
