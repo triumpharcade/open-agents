@@ -1,5 +1,6 @@
 import "server-only";
 import { auth } from "@/lib/auth/config";
+import { getProviderAccount } from "@/lib/db/accounts";
 
 /**
  * Get a valid GitHub access token for the given user.
@@ -9,8 +10,13 @@ export async function getUserGitHubToken(
   userId: string,
 ): Promise<string | null> {
   try {
+    const account = await getProviderAccount(userId, "github");
+    if (!account) {
+      return null;
+    }
+
     const result = await auth.api.getAccessToken({
-      body: { providerId: "github", userId },
+      body: { accountId: account.id, userId },
     });
 
     return result?.accessToken ?? null;
