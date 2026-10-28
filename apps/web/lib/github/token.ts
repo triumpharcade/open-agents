@@ -1,5 +1,6 @@
 import "server-only";
 import { auth } from "@/lib/auth/config";
+import { findUserProviderAccount } from "@/lib/db/accounts";
 
 /**
  * Get a valid GitHub access token for the given user.
@@ -9,14 +10,19 @@ export async function getUserGitHubToken(
   userId: string,
 ): Promise<string | null> {
   try {
+    const account = await findUserProviderAccount(userId, "github");
+    if (!account) {
+      return null;
+    }
+
     const result = await auth.api.getAccessToken({
-      body: { providerId: "github", userId },
+      body: { accountId: account.id, userId },
     });
 
     return result?.accessToken ?? null;
   } catch (error) {
-    // "Account not found" is expected when the user hasn't linked GitHub —
-    // only log unexpected errors.
+    // "Account not found" is expected if the account is unlinked between the
+    // lookup and the token read — only log unexpected errors.
     const isExpected =
       error instanceof Error && error.message === "Account not found";
     if (!isExpected) {
